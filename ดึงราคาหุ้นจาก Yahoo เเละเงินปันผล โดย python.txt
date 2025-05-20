@@ -1,0 +1,57 @@
+ดึงราคาหุ้นจาก Yahoo
+import yfinance as yf
+import pandas as pd
+
+# กำหนดค่าพารามิเตอร์
+stock_symbol = "BBL.BK"
+start_date = "2020-01-01"
+end_date = "2024-12-31"
+
+# ดาวน์โหลดข้อมูลหุ้น
+data = yf.download(stock_symbol, start=start_date, end=end_date, auto_adjust=False)
+
+# รีเซ็ตดัชนีเพื่อให้ 'Date' เป็นคอลัมน์
+data.reset_index(inplace=True)
+
+# สร้างช่วงวันที่ทั้งหมด
+full_date_range = pd.date_range(start=start_date, end=end_date)
+
+# ปรับ DataFrame ให้รวมทุกวัน
+data.set_index("Date", inplace=True)
+data = data.reindex(full_date_range)
+data.index.name = "Date"
+
+# จัดการค่าว่าง
+data.fillna(method='ffill', inplace=True)
+data.fillna(method='bfill', inplace=True)
+
+# รีเซ็ตดัชนีอีกครั้ง
+data.reset_index(inplace=True)
+
+
+
+
+
+
+#เงินปันผล
+from yfinance import Ticker
+import pandas as pd
+
+# สัญลักษณ์หุ้นของธนาคารกรุงเทพในตลาดหลักทรัพย์ไทย
+symbol = "BBL.BK"
+
+# ดึงข้อมูลหุ้นจาก Yahoo Finance
+stock = Ticker(symbol)
+
+# ดึงข้อมูลเงินปันผล
+dividends = stock.dividends
+
+# แปลงข้อมูลเป็น DataFrame
+df = pd.DataFrame(dividends)
+
+# รีเซ็ต index และเปลี่ยนชื่อคอลัมน์
+df = df.reset_index().rename(columns={"date": "Date", symbol: "Dividend"})
+
+# กรองข้อมูลเฉพาะปี 2020-2024
+df["Date"] = pd.to_datetime(df["Date"])
+df = df[(df["Date"].dt.year >= 2020) & (df["Date"].dt.year <= 2024)]
